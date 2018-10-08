@@ -1,0 +1,7 @@
+---
+
+ - include: "{{ role_action }}.yml"
+   when: role_action is defined
+   tags:
+     - common-utils
+...

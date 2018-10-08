@@ -1,0 +1,57 @@
+global:
+  bucket_name: "com.cia.ops.automation"
+  region: "us-west-2"
+  workers: 1
+
+iam_roles:
+  - name_of_your_iam_instance_role:
+      src_path: "../config/iam_roles_confs/name_of_your_iam_instance_role.json"
+      version: "0.0.1"
+      s3_path: "ansible/iam-role-conf/"
+      description: "Demo Role for ECS Instances"
+
+  - roles_map:
+      src_path: "../config/iam_roles_confs/roles_map.json"
+      version: "0.0.1"
+      s3_path: "ansible/iam-role-conf/"
+      description: "Default Mapping Roles (Do not Delete)"
+
+  - default:
+      src_path: "../config/iam_roles_confs/default.json"
+      version: "0.0.1"
+      s3_path: "ansible/iam-role-conf/"
+      description: "Default Role for all instances"
+
+ansible_roles:
+  - newrelic-infrastructure:
+      src_path: "../ansible/roles/newrelic-infrastructure/"
+      version: "0.0.1"
+      s3_path: "ansible/roles/"
+      description: "Role to install NewRelic Infrastructure Daemon"
+
+  - foobar:
+      src_path: "../ansible/roles/foobar/"
+      version: "0.0.1"
+      s3_path: "ansible/roles/"
+      description: "FOO-BAR Ansible role for testing"
+
+ansible_tasklists:
+  - foobar:
+      src_path: "../ansible/tasklists/foobar.yml"
+      version: "0.0.1"
+      s3_path: "ansible/tasklists/"
+      description: "FOO-BAR Ansible TaskList for testing"
+
+ansible_libraries:
+  - aws_ec2_metadata:
+      src_path: "../ansible/library/aws_ec2_metadata.py"
+      version: "0.0.1"
+      s3_path: "ansible/library/"
+      description: "Get EC2 metadata information Library"
+
+extra:
+  - uni_bootstrap:
+      src_path: "../ansible/uni_bootstrap/"
+      version: "0.0.1"
+      s3_path: "ansible/uni_bootstrap/"
+      description: "Ansible Universal Bootstrap for EC2"

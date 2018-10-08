@@ -1,0 +1,9 @@
+---
+
+- include: "{{ item }}"
+  with_fileglob:
+    - ./provision/*
+  retries: 10
+  delay: 1  
+
+...

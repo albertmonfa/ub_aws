@@ -1,0 +1,6 @@
+---
+
+ - debug:
+    msg: "FOO-BAR Role for testing"
+ 
+...

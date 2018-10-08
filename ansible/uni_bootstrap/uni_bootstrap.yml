@@ -1,0 +1,25 @@
+---
+
+- hosts: localhost
+  become: yes
+  connection: local
+  gather_facts: yes
+  vars:
+    role_action: provision
+
+  roles:
+    - common-ec2
+
+  tasks:
+    - aws_ec2_metadata:
+        tags: no
+
+    - ub_role_composer:
+       role: "{{ z_aws_iam_role }}"
+       roles_map_version: "0.0.1"
+       role_version: "0.0.1"
+       working_directory : "/tmp/ansible_composer"
+       create_if_needed: True
+      become: true
+
+...

@@ -1,0 +1,6 @@
+---
+
+ - debug:
+    msg: "FOO-BAR TaskList for testing"
+
+...

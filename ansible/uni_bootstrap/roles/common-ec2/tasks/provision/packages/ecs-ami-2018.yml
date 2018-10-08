@@ -1,0 +1,78 @@
+---
+
+- name: Update all Packages
+  yum:
+    name: '*'
+    state: latest
+
+- package:
+    name: yum-utils
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: bind-utils
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: htop
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: nano
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: tcpdump
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: amazon-efs-utils
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: python26-requests
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: python26-boto3
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: python26-pip
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+- package:
+    name: python-jsonschema
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 1
+
+...

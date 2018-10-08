@@ -1,0 +1,19 @@
+{
+  "roles": {
+    "foobar" : { "version" : "0.0.1" },
+    "newrelic-infrastructure" : { "version" : "0.0.1" }
+  },
+  "libraries": {
+    "aws_ec2_metadata": { "version" : "0.0.1" }
+  },
+  "vars": {
+    "role_action" : { "value" : "provision"},
+    "z_app_service" : { "value" : "SUPER APIs NODE"},
+    "z_app_environment" : { "value" : "Production"},
+    "z_app_platform" : { "value" : "ECS"}
+  },
+  "tasks": {
+    "foobar" : { "version" : "0.0.1"}
+  },
+  "name": "name_of_your_iam_instance_role"
+}

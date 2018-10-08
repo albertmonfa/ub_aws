@@ -1,0 +1,13 @@
+{# For backward compatibility, the license key will be written if it is defined #}
+{% if nrinfragent_license_key is defined %}
+license_key: {{ nrinfragent_license_key }}
+{% endif %}
+
+display_name: {{ z_aws_iam_role }}-{{ ansible_default_ipv4.address }}
+
+custom_attributes:
+  service: {{ z_app_service }}
+  environment: {{ z_app_environment }}
+  platform: {{ z_app_platform }}
+
+{{ nrinfragent_config | to_nice_yaml }}

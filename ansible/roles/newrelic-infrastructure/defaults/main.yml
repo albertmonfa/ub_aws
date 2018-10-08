@@ -1,0 +1,10 @@
+---
+z_app_environment: "NotDefined"
+z_app_service: "NotDefined"
+z_app_platform: "NotDefined"
+nrinfragent_state: "latest"
+nrinfragent_version: "*"
+nrinfragent_config:
+  license_key: XXXXXXXXXXXXXXXXXXXXXXX
+  log_file: /var/log/nr-infra.log
+  log_to_stdout: false

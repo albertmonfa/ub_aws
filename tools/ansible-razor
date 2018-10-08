@@ -1,0 +1,205 @@
+#!/usr/bin/python3
+
+'''
+Author: Albert Monfa 2018
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+'''
+
+'''
+TODOS
+=====
+    - Setting timeouts on queue waiting events
+    - Adding feature: overwriting role version
+    - Adding feature: Bucket_create_if_not_exist
+    - Adding feature: Clean_bucket to delete all objects.
+    - Adding feature: purge old objects from bucket
+'''
+
+import os
+import sys
+import yaml
+import logging
+import logging.handlers
+import argparse
+from jsonschema import validate, ValidationError
+
+from libs.orchestrator import z_orchestrator
+from libs.z_job import z_job
+
+global logger
+
+# Constant subsystem
+def constant(f):
+    def fset(self, value):
+        raise TypeError
+    def fget(self):
+        return f()
+    return property(fget, fset)
+
+class _Const(object):
+    @constant
+    def APP_NAME_DESC():
+        return """
+                This tool is designed as CI for Ansible roles in our environment
+                of automation environment. The tool uses the config file "ansible-razor.yml"
+                to create a map over the Ansible Roles ready to be upload into a S3 bucket.
+                After that this roles will be used as the baseline to create projects
+                using your own playbooks.
+               """
+    @constant
+    def APP_NAME():
+        return 'ansible-razor'
+    @constant
+    def APP_USAGE():
+        return """
+        ansible-razor [-h] [--config file]
+
+        To using ansible-razor you need define first a file configuration
+        with read permissions. By default the aplications expect to
+        find that file on config/ansible-razor.yml. An exemple of
+        the yaml config file could be:
+
+        ---
+        global:
+          bucket_name: "com.cia.ops.galaxy"
+          region: "us-west-2"
+          workers: 4
+
+        (...)
+        ...
+
+        You can add as many roles as you need.
+        """
+    @constant
+    def APP_EPILOG():
+        return """
+         Ansible Razor - 2018 Albert Monfa.
+         This Software is released under Apache License, Version 2.0.
+        """
+
+
+def config_validator(cfg):
+    global_sch  = {
+        "type": "object",
+        "required": [ "global", "iam_roles", "ansible_roles", "ansible_libraries", "ansible_tasklists", "extra"],
+        "properties" : {
+            "global": {
+                "type": "object",
+                "required": ["bucket_name", "region", "workers"],
+            "properties": {
+                "bucket_name":  { "type": "string" },
+                "region": { "type": "string" },
+                "workers" : { "type": "number" },
+            },
+                "additionalProperties": False
+            },
+            "iam_roles": {
+                "type": "array"
+            },
+            "ansible_roles": {
+                "type": "array"
+            },
+            "ansible_tasklists": {
+                "type": "array"
+            },
+            "ansible_libraries": {
+                "type": "array"
+            },
+            "extra": {
+                "type": "array"
+            },
+        },
+    }
+    storage_sch  = {
+       "type": "object",
+       "required": [ "src_path","version","s3_path"],
+       "properties" : {
+         "src_path":  { "type": "string" },
+         "version":  { "type": "string" },
+         "s3_path":  { "type": "string" },
+         "description":  { "type": "string" },
+       },
+       "additionalProperties": False
+    }
+    try:
+        validate(cfg,  global_sch)
+        for item in ['iam_roles', 'ansible_roles', 'ansible_libraries',
+                     'ansible_tasklists', 'extra']:
+            for iam_role in cfg[item]:
+                validate(dict(iam_role).popitem()[1],  storage_sch)
+    except Exception as e:
+        logger.fatal('Fatal error validating YaML conf: '+str(e.message))
+        sys.exit(1)
+
+def load_yaml_config( file ):
+    try:
+        with open(file, 'r') as yml_file:
+             cfg = yaml.load(yml_file)
+             config_validator(cfg)
+             return cfg
+    except Exception as e:
+           pprint(e)
+           logger.fatal('Error yaml validation:'+ str(e))
+           logger.fatal('Error loading yaml file config, it seems broken or missing! file:'+ str(file))
+           sys.exit(1)
+
+def generate_jobs(cfg):
+    jobs = list()
+    bucket_name = cfg['global']['bucket_name']
+    aws_region = cfg['global']['region']
+    for section in ['ansible_libraries', 'ansible_roles', 'iam_roles',
+                    'ansible_tasklists','extra']:
+        for element in cfg[section]:
+            job_name = list(element.keys())[0]
+            z_job = z_job(
+                job_name,
+                element[job_name]['src_path'],
+                element[job_name]['version'],
+                bucket_name,
+                element[job_name]['s3_path'],
+            )
+            jobs.append(z_job)
+    return jobs
+
+def cli_args_builder():
+    parser = argparse.ArgumentParser(
+                                      prog=str(CONST.APP_NAME),
+                                      usage=str(CONST.APP_USAGE),
+                                      description=str(CONST.APP_NAME_DESC),
+                                      epilog=str(CONST.APP_EPILOG)
+                                    )
+    parser.add_argument('--config', '-c',
+                            dest='config_file',
+                            default=str(os.getcwd())+'/../config/ansible-razor.yml',
+                            help='ansible-role yaml config file.'
+                        )
+    return vars(parser.parse_args())
+
+
+if __name__ == '__main__':
+    CONST = _Const()
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s -  %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    args = cli_args_builder()
+    cfg = load_yaml_config(args['config_file'])
+    jobs = generate_jobs(cfg)
+    orch = z_orchestrator(jobs, logger, cfg['global']['workers'] )
+    orch.monitor()
+    orch.summary()

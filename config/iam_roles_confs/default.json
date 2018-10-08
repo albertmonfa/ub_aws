@@ -1,0 +1,20 @@
+{
+  "roles": {
+    "role1":{},
+    "role2":{},
+    "role3":{}
+  },
+  "libraries": {
+    "lib1":"",
+    "lib2":""
+  },
+  "vars": {
+    "var1":"",
+    "var2":""
+  },
+  "tasks": {
+    "task1":{},
+    "task2":{}
+  },
+  "name": "Default"
+}
